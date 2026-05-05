@@ -21,6 +21,13 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 - Before refactoring (baseline check)
 - After fixing complex bug
 
+**Escalate to `requesting-deep-review` when:**
+- Change is security-sensitive, touches data handling, or is hard to roll back (migrations, external APIs, schema changes)
+- Cross-cutting refactor touching many modules
+- Human explicitly asks for a "deep review", "thorough review", or "senior review"
+
+Don't run both reviewers on the same diff — pick one.
+
 ## How to Request
 
 **1. Get git SHAs:**
