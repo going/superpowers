@@ -3,11 +3,11 @@
   "description": "Core skills library for Claude Code: TDD, debugging, collaboration patterns, and proven techniques",
   "version": "6.1.1",
   "author": {
-    "name": "Jesse Vincent",
-    "email": "jesse@fsck.com"
+    "name": "Tian",
+    "email": "xiocode@gmail.com"
   },
-  "homepage": "https://github.com/obra/superpowers",
-  "repository": "https://github.com/obra/superpowers",
+  "homepage": "https://github.com/going/superpowers",
+  "repository": "https://github.com/going/superpowers",
   "license": "MIT",
   "keywords": [
     "skills",
