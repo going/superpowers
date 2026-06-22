@@ -66,6 +66,22 @@ SVG `<text>` does **not** wrap, and the browser won't reflow your layout to make
 
 **Explorable / exportable diagrams:** give each node a `data-key` and update a sticky detail `<aside>` on click. To let the reader save the diagram, serialize the `<svg>` (`XMLSerializer` → `Blob` → a temporary download link) — and embed a `<style>` inside the SVG's `<defs>` so the downloaded file keeps its fonts.
 
+## Choosing the diagram type
+
+Pick the shape that fits the relationship, then keep one direction (left-to-right *or* top-to-bottom) across the whole diagram and hold to three colors used for type/status, never decoration.
+
+| Type | Use when | Key conventions |
+|---|---|---|
+| **Flowchart / data-flow** | Request paths, ETL pipelines, decision branches | Boxes = stages, diamonds = branches, edges annotated with the data shape |
+| **Sequence** | Interactions over time across actors | Vertical lifelines, arrows flow downward, steps numbered |
+| **State machine** | Discrete states + transitions (order status, connection state, UI mode) | Circles = states, arrows labeled with triggering event + side effect |
+| **Architecture / component** | "How the system fits together" | Layers or zones; show data-ownership boundaries; sync vs async edges (below) |
+| **Dependency graph** | "What depends on what" — modules, packages, services | Directed edges, layer by depth, cycles highlighted in red |
+| **Timeline / Gantt** | Sequences with duration | Horizontal time axis, bars for activities, milestones as vertical lines |
+| **Layered / sandwich** | Stack-like concepts (network layers, request lifecycle) | Horizontal bands, each labeled, concrete details inside |
+
+**Architecture edge + shape vocabulary** (so styles aren't reinvented per diagram): solid = synchronous call, dashed = asynchronous (queue/event), dotted = optional/fallback, thick = hot path, red = known problem. Rectangle = service, cylinder = data store, hexagon/pill = queue or topic, cloud = third-party, person = actor. For 10+ components, use zoom levels in one file — a zone map up top linking down to per-zone and per-service detail sections.
+
 ## Interactivity without dependencies
 
 You rarely need a framework or a CDN — the native toolkit covers most artifacts, accessibly and with less code:
@@ -73,11 +89,20 @@ You rarely need a framework or a CDN — the native toolkit covers most artifact
 - **Progressive disclosure:** `<details>`/`<summary>` for collapsible sections (file diffs, FAQs, long step lists). Keyboard-accessible and screen-reader-announced for free; rotate a CSS `::before` chevron on `details[open]`. Reach for this before hand-rolling an accordion.
 - **Toggles / tabs / segmented controls:** native `<input type="radio">` or `checkbox` styled with `label:has(input:checked)` — selection state with zero JS, keyboard-navigable by default.
 - **Tunable parameters (sliders/knobs):** on input, mutate a CSS variable — `document.documentElement.style.setProperty('--pad', v + 'px')` — and let the cascade repaint; no re-render.
-- **Slide deck:** `scroll-snap-type:y mandatory` + `scroll-snap-align:start` per slide; arrow/space keys call `slide.scrollIntoView({behavior:'smooth'})`; an `IntersectionObserver` keeps the "N / M" counter in sync. Size headings with `clamp(40px,6vw,64px)`.
+- **Slide deck:** `scroll-snap-type:y mandatory` + `scroll-snap-align:start` per slide; `→`/`space` next, `←` previous, `f` toggles fullscreen (`requestFullscreen`/`exitFullscreen`), `n` toggles speaker notes kept in an `<aside>` per `<section>`. Sync `location.hash` to the slide number so `#3` deep-links slide 3; an `IntersectionObserver` keeps the "N / M" counter in sync. Size headings with `clamp(40px,6vw,64px)`.
 - **Stable demos:** seed any placement/shuffle from a tiny inline hash (e.g. FNV-1a) instead of `Math.random()`, so reload and "reset" return the same layout.
 - **Re-render on input:** debounce with `requestAnimationFrame`, not a `setTimeout` guess. For `contenteditable`, intercept paste (insert `text/plain` only) and Enter so the markup can't corrupt.
 
 **Exporting a result.** When the artifact's value is what the reader hands back, give it an **export button** that serializes state to JSON or an indented outline and copies it with a hardened clipboard helper (async Clipboard API → `execCommand('copy')` → visible-textarea fallback) — never a bare `navigator.clipboard.writeText`, which breaks on `file://` and in sandboxes. One export affordance per result; don't make the reader choose between redundant "copy as X" buttons. *Genuinely distinct* exports are fine — a config editor offering "copy diff" vs "copy full" serves two real needs. There's no background server here; the clipboard round-trip is the contract.
+
+## Design-token / palette pages
+
+When the artifact *is* a palette, type scale, or token reference, rendered swatches aren't enough — give it the affordances markdown can't:
+
+- **Contrast per pairing, not in the abstract.** Show each color's WCAG ratio against the colors it will actually sit on (text on background), tagged `AA` / `AAA` / `fail`. Never hide a failing pair.
+- **Dual-click copy.** Click the swatch to copy the CSS variable (`var(--accent-500)`); click the value to copy the raw hex/token. Flash a brief "copied".
+- **Bulk export.** A "Copy all as CSS variables" button emits a paste-ready `:root { … }` block for every token shown.
+- **Type samples in real sentences, not lorem ipsum** — each labeled with font, weight, size, line-height, and letter-spacing so the scale can be judged in context.
 
 ## Red Flags — STOP
 
