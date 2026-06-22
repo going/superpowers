@@ -31,9 +31,14 @@ Prefer this over reading the whole file. The script prints only nearby context, 
 
 3. Resolve the file.
 
-- Take one side wholesale with `git checkout --ours -- path/to/file` or `git checkout --theirs -- path/to/file` when appropriate.
+- **Understand each side's intent first.** Before editing a hunk, know *why* both sides changed it — read the commit messages behind the conflict (`git log --merge -p -- path/to/file`), and the linked PR or issue when the message isn't enough. You can't merge intents you don't understand.
+- **Preserve both intents where possible.** A conflict usually means two real changes collided, not that one is wrong.
+- **Where the two are genuinely incompatible,** pick the side matching the merge's stated goal and note the trade-off in the commit message. Don't split the difference into something neither side intended.
+- **Don't invent new behaviour.** Resolve to code one side actually wrote; a conflict is not a license to rewrite.
+- Take one side wholesale with `git checkout --ours -- path/to/file` or `git checkout --theirs -- path/to/file` when that side is entirely correct.
 - Otherwise edit the file directly and remove the conflict markers.
 - Read more of the file only if the compact output is not enough to decide the correct merge.
+- **Never `--abort` just because a hunk is hard** — that throws away the whole merge/rebase. Resolve it.
 
 4. Re-check unresolved files.
 
@@ -46,8 +51,14 @@ git diff --name-only --diff-filter=U
 
 - Ensure no unmerged paths remain.
 - Ensure no `<<<<<<<`, `=======`, or `>>>>>>>` markers remain in the resolved files.
-- Run targeted tests, builds, or linters for the touched area.
+- Run the project's automated checks for the touched area — typically typecheck, then tests, then format — and fix anything the merge broke.
 - Stage the resolved files.
+
+6. Finish the operation.
+
+- **Merge:** once everything is staged, `git commit` (the merge message is pre-filled).
+- **Rebase:** `git rebase --continue`. Conflicts can recur on the next commit — repeat steps 1–5 for each until the rebase finishes.
+- **Cherry-pick:** `git cherry-pick --continue`. **Stash pop:** once the markers are gone the changes are already in the worktree; there's nothing to continue.
 
 ## Commands
 
