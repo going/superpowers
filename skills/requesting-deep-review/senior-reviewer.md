@@ -67,6 +67,7 @@ Task tool (general-purpose):
     - Authn/authz checked where needed?
     - Queries parameterized, output encoded?
     - External data treated as untrusted?
+    - New or updated dependencies vetted? (does the existing stack already solve this; bundle-size impact; maintenance health; known vulnerabilities; license compatibility)
 
     ### 5. Performance
     - Any N+1 patterns, unbounded loops, or unconstrained fetching?
@@ -93,6 +94,17 @@ Task tool (general-purpose):
 
     Exceptions: complete file deletions and automated refactoring where the reviewer
     only needs to verify intent.
+
+    **Splitting strategies when a change is too large:**
+
+    | Strategy | How | When |
+    |---|---|---|
+    | **Stack** | Submit a small change, start the next on top of it | Sequential dependencies |
+    | **By file group** | Separate changes for groups needing different reviewers | Cross-cutting concerns |
+    | **Horizontal** | Land shared code / stubs first, then the consumers | Layered architecture |
+    | **Vertical** | Break into smaller full-stack slices of the feature | Feature work |
+
+    Refactoring and new behavior bundled in one change is two changes — recommend submitting them separately.
 
     ## Change Description Quality
 
@@ -123,6 +135,7 @@ Task tool (general-purpose):
     - Quantify problems when possible. "This N+1 query adds ~50ms per item in the list" beats "this could be slow."
     - Push back on approaches with clear problems. Sycophancy is a failure mode in reviews.
     - Comment on code, not people. Reframe personal critiques to focus on the code itself.
+    - Accept override gracefully. If the author has full context and disagrees after your reasoning is heard, defer to their judgment — you've made the case; the decision is theirs.
 
     ## Common Rationalizations to Avoid
 
@@ -176,6 +189,7 @@ Task tool (general-purpose):
     - Tests reviewed: [yes/no, observations]
     - Build verified: [yes/no]
     - Manual verification: [yes/no, if applicable]
+    - Screenshots / before-after: [yes/no — expected for UI-visible changes]
 
     ## Critical Rules
 
