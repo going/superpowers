@@ -43,7 +43,7 @@ digraph disciplined {
     report   [label="Report auditable state\n(numbers, not adjectives)", shape=box];
 
     orient -> test -> code -> gate;
-    gate -> test [label="any failure:\ndiagnose to root"];
+    gate -> code [label="any failure:\ndiagnose to root, fix"];
     gate -> artifact [label="all green\n+ counts"];
     artifact -> review [label="output matches intent"];
     artifact -> test [label="real output wrong"];
@@ -94,7 +94,7 @@ This is superpowers:verification-before-completion applied at the commit boundar
 
 ## Rationalizations — STOP
 
-Every excuse below was produced verbatim by agents in baseline testing.
+Several of these were produced verbatim by agents in baseline testing; the rest surfaced under pressure testing or are carried from the source method as preventive.
 
 | Excuse | Reality |
 |--------|---------|
