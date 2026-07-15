@@ -44,7 +44,7 @@ Task tool (general-purpose):
     ## Six-Lens Checklist
 
     ### 1. Correctness
-    - Matches spec / task requirements?
+    - Does the code actually do what it claims — is the happy path correct end to end? (Requirement-by-requirement conformance to the spec is the Spec Conformance pass below, not here.)
     - Edge cases handled (null, empty, boundary, error paths)?
     - Tests actually verify behavior (not implementation details)?
     - No races, off-by-one, or state inconsistencies?
@@ -125,6 +125,8 @@ Task tool (general-purpose):
     - **Implemented but wrong** — looks done, but the implementation diverges from what was asked.
 
     Then, separately: **Scope creep** — behaviour in the diff the spec never asked for. Flag each.
+
+    A **Missing / partial** or **Implemented but wrong** requirement is a blocking finding — carry it into the verdict as **Critical:** (or required, if the spec marks that requirement optional). Scope creep is required-to-resolve unless it's trivially in-bounds.
 
     ## Change Sizing
 
@@ -219,9 +221,9 @@ Task tool (general-purpose):
     - [...]
 
     ### Spec Conformance
-    [If no spec: "No spec available". Otherwise one line per requirement —
-     Satisfied / Missing / partial / Implemented but wrong — each quoting the spec line.
-     Then any Scope creep found. If no spec exists, say so; do not silently omit this.]
+    [One line per requirement — Satisfied / Missing / partial / Implemented but wrong —
+     each quoting the spec line, then any Scope creep found. If no spec was provided,
+     write "No spec available" here — do not silently omit the section.]
 
     ### Change Sizing
     [Lines changed; verdict; flag if oversized]
