@@ -5,7 +5,7 @@ description: Use ONLY when the human explicitly requests a deep, thorough, senio
 
 # Requesting Deep Review
 
-Dispatch a `general-purpose` subagent for a six-lens review: correctness, readability & simplicity, architecture, security, performance, and production readiness. Use this when a change warrants deeper scrutiny than the default `requesting-code-review` provides.
+Dispatch a `general-purpose` subagent for a six-lens review: correctness, readability & simplicity, architecture, security, performance, and production readiness — with the readability and architecture lenses drawing on a named Fowler design-smell baseline, plus a dedicated Spec Conformance pass that checks the change against its originating spec requirement by requirement. Use this when a change warrants deeper scrutiny than the default `requesting-code-review` provides.
 
 **Core principle:** Opt-in only. This skill is NOT auto-invoked by `subagent-driven-development` or `executing-plans`. It runs only when the human explicitly asks for a deep review.
 
@@ -67,7 +67,8 @@ This is richer than `requesting-code-review`'s Critical / Important / Minor — 
 |---|---|---|
 | Trigger | After any task | Explicit opt-in only |
 | Subagent | `general-purpose` + `code-reviewer.md` template | `general-purpose` + `senior-reviewer.md` template |
-| Framework | 5 implicit categories | 6 named lenses |
+| Framework | 5 implicit categories | 6 named lenses + Fowler design-smell baseline |
+| Spec conformance | Folded into review | Dedicated requirement-by-requirement pass |
 | Severity labels | Critical / Important / Minor | Critical / (no prefix) / Nit / Optional / FYI |
 | Change sizing | Not flagged | Explicit finding |
 | Change description | Not flagged | Explicit finding |
@@ -116,7 +117,7 @@ You: [Split the PR, fix MD5 → SHA-256, confirm cache suggestion, remove legacy
 
 ## How This Skill Is Wired
 
-Two files work together — keep them in sync when the six-lens framework, severity prefixes, or output format changes:
+Two files work together — keep them in sync when the six-lens framework, the design-smell baseline, the Spec Conformance pass, severity prefixes, or output format changes:
 
 - `skills/requesting-deep-review/SKILL.md` (this file) — when and how to dispatch.
 - `skills/requesting-deep-review/senior-reviewer.md` — the dispatch template with `{PLACEHOLDERS}`; the orchestrating agent fills it in and passes it as the subagent's prompt.
