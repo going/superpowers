@@ -17,8 +17,8 @@ Task tool (general-purpose):
 
     Your task:
     1. Review {WHAT_WAS_IMPLEMENTED}
-    2. Compare against {PLAN_OR_REQUIREMENTS}
-    3. Evaluate each lens with the specific checks below
+    2. Evaluate each lens with the specific checks below
+    3. Run the Spec Conformance pass against {PLAN_OR_REQUIREMENTS}
     4. Categorize every finding with a severity prefix
     5. Emit the Output Format at the bottom
 
@@ -54,12 +54,14 @@ Task tool (general-purpose):
     - Could this be done in fewer lines? (1000 where 100 suffice is a failure.)
     - Abstractions earning their complexity? (No generalizing before the third use case.)
     - Dead artifacts flagged (no-op vars, backwards-compat shims, `// removed` comments)?
+    - Consult the Design Smell Baseline below and NAME any that apply here (Mysterious Name, Duplicated Code).
 
     ### 3. Architecture
     - Follows existing patterns or introduces a justified new one?
     - Clean module boundaries, no circular dependencies?
     - No duplication that should be shared?
     - Appropriate abstraction level?
+    - Consult the Design Smell Baseline below and NAME any that apply here (Feature Envy, Data Clumps, Primitive Obsession, Repeated Switches, Shotgun Surgery, Divergent Change, Speculative Generality, Message Chains, Middle Man, Refused Bequest).
 
     ### 4. Security
     - Input validated and sanitized at boundaries?
@@ -80,6 +82,49 @@ Task tool (general-purpose):
     - Backward-compatibility considered?
     - Documentation updated for user-facing or API changes?
     - Feature-flag or staged rollout for risky changes?
+
+    ## Design Smell Baseline
+
+    Lenses 2 and 3 draw on this fixed set of named smells (Fowler, _Refactoring_, ch. 3).
+    Naming a smell makes the finding searchable and carries its fix. Two rules bind it:
+
+    - **The repo overrides.** A documented repo standard or an existing in-repo pattern
+      always wins; where it endorses something a smell would flag, suppress the smell.
+    - **Always a judgement call.** Each smell is a labelled heuristic ("possible Feature
+      Envy"), never a hard violation. Skip anything tooling (linter, formatter) enforces.
+
+    Each reads *what it is* → *how to fix*:
+
+    - **Mysterious Name** — a function, variable, or type whose name doesn't reveal what it does or holds. → rename it; if no honest name comes, the design is murky.
+    - **Duplicated Code** — the same logic shape in more than one hunk or file in the change. → extract the shared shape, call it from both.
+    - **Feature Envy** — a method that reaches into another object's data more than its own. → move the method onto the data it envies.
+    - **Data Clumps** — the same few fields or params keep travelling together. → bundle them into one type, pass that.
+    - **Primitive Obsession** — a primitive or string standing in for a domain concept that deserves its own type. → give the concept its own small type.
+    - **Repeated Switches** — the same `switch`/`if`-cascade on the same type recurs across the change. → replace with polymorphism, or one map both sites share.
+    - **Shotgun Surgery** — one logical change forces scattered edits across many files. → gather what changes together into one module.
+    - **Divergent Change** — one file or module is edited for several unrelated reasons. → split so each module changes for one reason.
+    - **Speculative Generality** — abstraction, parameters, or hooks added for needs the spec doesn't have. → delete it; inline back until a real need shows.
+    - **Message Chains** — long `a.b().c().d()` navigation the caller shouldn't depend on. → hide the walk behind one method on the first object.
+    - **Middle Man** — a class or function that mostly just delegates onward. → cut it, call the real target direct.
+    - **Refused Bequest** — a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
+
+    ## Spec Conformance
+
+    Distinct from Correctness (which asks "is the code right in itself?"), this pass asks
+    "does the code deliver exactly what the spec asked — no less, no more?" Correctness can
+    pass while Spec fails: code with clean edge-case handling that implements the wrong thing.
+
+    If no spec, plan, or requirements were provided, write "No spec available" and skip this pass.
+
+    Otherwise walk the spec **requirement by requirement**. Enumerate EVERY requirement — not
+    only the ones with problems: a requirement you confirm as satisfied is a checked box the
+    author can trust. For each, quote the spec line and mark it one of:
+
+    - **Satisfied** — implemented as asked.
+    - **Missing / partial** — asked for but absent or only half-built.
+    - **Implemented but wrong** — looks done, but the implementation diverges from what was asked.
+
+    Then, separately: **Scope creep** — behaviour in the diff the spec never asked for. Flag each.
 
     ## Change Sizing
 
@@ -173,6 +218,11 @@ Task tool (general-purpose):
     **Production Readiness:**
     - [...]
 
+    ### Spec Conformance
+    [If no spec: "No spec available". Otherwise one line per requirement —
+     Satisfied / Missing / partial / Implemented but wrong — each quoting the spec line.
+     Then any Scope creep found. If no spec exists, say so; do not silently omit this.]
+
     ### Change Sizing
     [Lines changed; verdict; flag if oversized]
 
@@ -216,4 +266,4 @@ Task tool (general-purpose):
 - `{HEAD_SHA}` — ending commit
 - `{DESCRIPTION}` — brief summary
 
-**Reviewer returns:** Verdict, Findings by Lens (severity-prefixed), Change Sizing, Change Description Quality, Dead Code Identified, What's Done Well, Verification Story.
+**Reviewer returns:** Verdict, Findings by Lens (severity-prefixed, design smells named), Spec Conformance (requirement-by-requirement + scope creep), Change Sizing, Change Description Quality, Dead Code Identified, What's Done Well, Verification Story.
