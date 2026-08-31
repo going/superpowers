@@ -5,7 +5,7 @@ description: Use ONLY when the human explicitly requests a deep, thorough, senio
 
 # Requesting Deep Review
 
-Dispatch a `general-purpose` subagent for a six-lens review: correctness, readability & simplicity, architecture, security, performance, and production readiness — with the readability and architecture lenses drawing on a named Fowler design-smell baseline, plus a dedicated Spec Conformance pass that checks the change against its originating spec requirement by requirement. Use this when a change warrants deeper scrutiny than the default `requesting-code-review` provides.
+Dispatch a `general-purpose` subagent for a six-lens review: correctness, readability & simplicity, architecture, security, performance, and production readiness — with the readability and architecture lenses drawing on a named Fowler design-smell baseline, plus a dedicated Spec Conformance pass that checks the change against its originating spec requirement by requirement. Structural findings must arrive with a proposed remedy, not just a complaint. Use this when a change warrants deeper scrutiny than the default `requesting-code-review` provides.
 
 **Core principle:** Opt-in only. This skill is NOT auto-invoked by `subagent-driven-development` or `executing-plans`. It runs only when the human explicitly asks for a deep review.
 
@@ -61,6 +61,8 @@ Use the Task tool with `subagent_type: "general-purpose"` and pass the filled te
 
 This is richer than `requesting-code-review`'s Critical / Important / Minor — the distinction is load-bearing so authors don't treat all comments as required.
 
+**The reviewer's approval bar:** APPROVE when the change definitely improves overall code health, even if it isn't perfect. A REQUEST CHANGES verdict means real problems, not stylistic disagreement — so treat one as worth acting on rather than arguing past.
+
 ## Contrast with `requesting-code-review`
 
 | Aspect | `requesting-code-review` (fast) | `requesting-deep-review` (this) |
@@ -70,7 +72,9 @@ This is richer than `requesting-code-review`'s Critical / Important / Minor — 
 | Framework | 5 implicit categories | 6 named lenses + Fowler design-smell baseline |
 | Spec conformance | Folded into review | Dedicated requirement-by-requirement pass |
 | Severity labels | Critical / Important / Minor | Critical / (no prefix) / Nit / Optional / FYI |
-| Change sizing | Not flagged | Explicit finding |
+| Change sizing | Not flagged | Explicit finding (diff size + resulting file size) |
+| Structural findings | Not flagged | Named smell plus a proposed remedy |
+| Dependency review | Not flagged | Adds and upgrades — changelog, per-package split, lockfile diff |
 | Change description | Not flagged | Explicit finding |
 | Dead code | Not explicitly checked | Explicit "ask before remove" step |
 | Typical use | Routine per-task review | Pre-merge or high-stakes changes |
