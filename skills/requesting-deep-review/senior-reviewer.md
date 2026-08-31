@@ -54,6 +54,7 @@ Task tool (general-purpose):
     - Could this be done in fewer lines? (1000 where 100 suffice is a failure.)
     - Abstractions earning their complexity? (No generalizing before the third use case.)
     - Dead artifacts flagged (no-op vars, backwards-compat shims, `// removed` comments)?
+    - Is a new conditional bolted onto an unrelated flow? That's a design problem, not a nit — push the logic into its own helper, state, or policy instead of tangling an existing path.
     - Consult the Design Smell Baseline below and NAME any that apply here (Mysterious Name, Duplicated Code).
 
     ### 3. Architecture
@@ -61,6 +62,9 @@ Task tool (general-purpose):
     - Clean module boundaries, no circular dependencies?
     - No duplication that should be shared?
     - Appropriate abstraction level?
+    - Does this refactor reduce complexity or just relocate it? Count the concepts a reader must hold to follow the change; if a "cleaner" version leaves that count unchanged, it isn't cleaner. Prefer the restructuring that makes whole branches, modes, or layers disappear, and prefer deleting an abstraction to polishing it.
+    - Is feature-specific logic leaking into a shared or general-purpose module? Keep logic in its owning layer and reuse the existing canonical helper rather than a near-duplicate.
+    - Are type boundaries explicit? Question gratuitous `any`/`unknown`/optional/casts and silent fallbacks that paper over an unclear invariant — making the boundary explicit usually simplifies the surrounding control flow.
     - Consult the Design Smell Baseline below and NAME any that apply here (Feature Envy, Data Clumps, Primitive Obsession, Repeated Switches, Shotgun Surgery, Divergent Change, Speculative Generality, Message Chains, Middle Man, Refused Bequest).
 
     ### 4. Security
@@ -108,6 +112,27 @@ Task tool (general-purpose):
     - **Middle Man** — a class or function that mostly just delegates onward. → cut it, call the real target direct.
     - **Refused Bequest** — a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
+    ## Structural Remedies
+
+    When you flag a structural problem, propose the move — not just the problem. A finding that
+    only says "this is complex" leaves the author guessing. Each smell above carries its own fix
+    (the `→` clause); for problems the list doesn't name, reach for one of these:
+
+    - **Separate orchestration from business logic** so each reads on its own.
+    - **Move feature-specific logic** out of a shared module into the package that owns the concept.
+    - **Reuse the canonical helper** instead of a bespoke near-duplicate.
+    - **Make a type boundary explicit** so downstream branching disappears.
+    - **Split a large file** into focused modules.
+
+    Prefer the remedy that removes moving pieces over one that spreads the same complexity around.
+
+    **Presumptive blockers.** For each of the following, surface the problem and propose the
+    simpler design — but escalate to **Required** only when the change actively makes structure
+    worse: a refactor that relocates complexity instead of reducing it; a change that pushes a
+    file past the size boundary with no decomposition; feature logic added to a shared module; a
+    near-duplicate of an existing canonical helper; a silent fallback that hides an unclear
+    invariant.
+
     ## Spec Conformance
 
     Distinct from Correctness (which asks "is the code right in itself?"), this pass asks
@@ -142,6 +167,12 @@ Task tool (general-purpose):
     Exceptions: complete file deletions and automated refactoring where the reviewer
     only needs to verify intent.
 
+    **Watch file size, not just diff size.** A small diff can still push a file past a healthy
+    boundary — around 1000 *total* lines in a single file is an inspection signal, not a hard
+    cap (distinct from the ~1000 *changed*-lines threshold above). When a change materially
+    grows an already-large file, ask whether to extract helpers, subcomponents, or modules
+    *first*, before piling more on.
+
     **Splitting strategies when a change is too large:**
 
     | Strategy | How | When |
@@ -160,6 +191,21 @@ Task tool (general-purpose):
     - **Body:** what is changing and why; context, decisions, and reasoning not visible in the code.
     - Anti-patterns to flag: "Fix bug," "Fix build," "Phase 1," "Moving code from A to B."
 
+    ## Dependency Upgrades
+
+    A version bump is a behavior change nobody in the diff wrote, and the riskiest bumps are the
+    ones merged in bulk under "bump deps." If the range touches dependency manifests or lockfiles:
+
+    - **Read the changelog, not just the version number.** Semver is a promise the maintainer may
+      not have kept — a "patch" can carry a behavioral change. For a major bump, find what breaks.
+    - **One dependency per change.** A bulk bump that breaks the build hides which package did it.
+      Flag bulk bumps and recommend splitting them per package.
+    - **Let the tests decide.** The upgrade is verified by a green suite before *and* after, not by
+      "it installed." Thin coverage around the dependency's behavior is itself the finding.
+    - **Mind the transitive graph.** Review the lockfile diff, not just the manifest — one direct
+      bump can pull in dozens of indirect changes.
+    - **Keep the lockfile honest.** It must be committed, its diff reviewed, and never hand-edited.
+
     ## Severity Prefixes
 
     | Prefix | Meaning |
@@ -169,6 +215,16 @@ Task tool (general-purpose):
     | **Nit:** | Minor / style — author may ignore |
     | **Optional:** / **Consider:** | Suggestion — not required |
     | **FYI:** | Informational — no action |
+
+    **Lead with what matters.** Within each lens, order findings by leverage: correctness and
+    security first, then structural regressions and missed simplifications, then everything else.
+    A few high-conviction findings beat a long list — if you have one structural problem and ten
+    nits, the structural problem *is* the review.
+
+    **Approval standard.** APPROVE when the change definitely improves overall code health, even
+    if it isn't perfect. Perfect code doesn't exist. Don't REQUEST CHANGES because the code isn't
+    how you would have written it; if it improves the codebase and follows the project's
+    conventions, approve it.
 
     ## Dead Code Hygiene
 
@@ -193,6 +249,10 @@ Task tool (general-purpose):
     | "We'll clean it up later" | Later never comes. Require cleanup before merge, not after. |
     | "AI-generated code is probably fine" | AI code needs more scrutiny, not less. It's confident and plausible, even when wrong. |
     | "The tests pass, so it's good" | Tests don't catch architecture problems, security issues, or readability concerns. |
+    | "The refactor makes it cleaner" | Relocating complexity isn't reducing it. If the reader still holds the same number of concepts, the structure didn't improve. |
+    | "It's only a small addition to this file" | Small diffs still push files past a healthy size and bolt branches onto unrelated flows. Judge the resulting structure, not the diff size. |
+    | "It's just a version bump" | A bump is a behavior change you didn't write. Read the changelog; semver doesn't guarantee no breakage. |
+    | "Upgrade everything in one PR to save time" | A bulk bump that breaks the build hides which package did it. One dependency per change keeps the cause and the revert clean. |
 
     ## Output Format
 
@@ -231,6 +291,10 @@ Task tool (general-purpose):
     ### Change Description Quality
     [Commit message review; flag weak descriptions]
 
+    ### Dependency Upgrades
+    [If the range touches dependency manifests or lockfiles: changelog review, per-package
+     isolation, lockfile diff. Otherwise write "No dependency changes".]
+
     ### Dead Code Identified
     [list if any — ask "Safe to remove these?"]
 
@@ -249,6 +313,7 @@ Task tool (general-purpose):
     - Categorize every finding with a severity prefix
     - Cite specific file:line — not vague references
     - Explain WHY issues matter
+    - Propose a concrete remedy for every structural finding — name the move, don't just name the problem
     - Acknowledge strengths with at least one specific observation
     - Quantify problems when possible
     - Give a clear verdict
@@ -268,4 +333,4 @@ Task tool (general-purpose):
 - `{HEAD_SHA}` — ending commit
 - `{DESCRIPTION}` — brief summary
 
-**Reviewer returns:** Verdict, Findings by Lens (severity-prefixed, design smells named), Spec Conformance (requirement-by-requirement + scope creep), Change Sizing, Change Description Quality, Dead Code Identified, What's Done Well, Verification Story.
+**Reviewer returns:** Verdict, Findings by Lens (severity-prefixed, design smells named, structural remedies proposed), Spec Conformance (requirement-by-requirement + scope creep), Change Sizing, Change Description Quality, Dependency Upgrades, Dead Code Identified, What's Done Well, Verification Story.
