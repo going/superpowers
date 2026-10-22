@@ -291,6 +291,7 @@ part of the installed extension** — never substitute "edit the user's global
 |---|---|---|
 | runs a shell command at session start and reads its stdout | A (shell-hook) | Cursor (`hooks/session-start` + `hooks/hooks-cursor.json` + `.cursor-plugin/`) |
 | is a JS/TS plugin host with session/message lifecycle callbacks | B (in-process) | OpenCode (`.opencode/`) — or pi (`.pi/`) if it has no native skill tool |
+| is a Cordis-based plugin host with a skill registry and session runtime-context services | B (in-process), shipped as a profile bundle | DeepSeek Harness (`.dsh-plugin/` + `package.json` `dsh.bundle`) |
 | ships an extension-declared context file it always loads | C (instructions-file) | Gemini (`gemini-extension.json` + `GEMINI.md` + `references/gemini-tools.md`) |
 | lists each installed skill's description, with no session-start event and no context-file field | skill-index bootstrap (Part 5 Step 5, case 2 fallback) | Antigravity (`.antigravity-plugin/plugin.json` + `skills/` only) |
 
@@ -689,6 +690,7 @@ it. Distribution differs per harness ecosystem — find yours:
 | External marketplace fork, synced by script | Codex | `scripts/sync-to-codex-plugin.sh` rsyncs the tracked plugin files into a separate fork repo and opens a PR. Read its include/exclude list so you ship the right tree (it deliberately drops repo-internal dirs and other harnesses' dotdirs). |
 | Git-URL extension install | Gemini, Kimi Code, OpenCode | Users install from a git URL (`gemini extensions install …`; Kimi Code `/plugins install …`; an `opencode.json` `plugin` array entry). Document the exact command. |
 | Package-manifest fields | pi | Declared through fields in the repo-root `package.json`; users install via the harness's package command. |
+| Profile plugin bundle | DeepSeek Harness (`dsh`) | The repo-root `package.json` declares `dsh.bundle.patch`; users install with `dsh plugin --profile <name> add <spec>` (or the app's Plugins page). The bundle carries its own patch, plugin module, display metadata, and skill tree. |
 | Git-URL plugin install + marketplace | Antigravity (`agy`) | Users run `agy plugin install https://github.com/obra/superpowers`. agy reads `.antigravity-plugin/plugin.json`, whose Marketplace fields (`displayName`, `logo`, `suggestedPrompts`, `version`, `author`) also drive the Antigravity Marketplace listing. Without that manifest, agy falls back to importing `gemini-extension.json`. |
 
 Then:
@@ -808,6 +810,7 @@ Use this as the live index; when in doubt, read the files, not this table.
 | Codex | `.codex-plugin/plugin.json` (declares empty `hooks`) | native skill discovery (no session-start hook) | `references/codex-tools.md` | `tests/codex/`, `tests/codex-plugin-sync/` | fork sync (`scripts/sync-to-codex-plugin.sh`) |
 | Cursor | `.cursor-plugin/plugin.json` + `hooks/hooks-cursor.json` | shell hook → `hooks/session-start` (`additional_context`) | none needed (Claude Code–compatible tool surface) | `tests/hooks/` | hand-authored |
 | Copilot CLI | (shares Claude Code hook path; `COPILOT_CLI` env) | shell hook → `hooks/session-start` (`additionalContext`) | none needed (Claude Code–compatible tool surface) | `tests/hooks/` | — |
+| DeepSeek Harness (`dsh`) | `.dsh-plugin/index.js` + `package.json` `dsh.bundle.patch` | in-process: `ctx.skills.registerProvider` registers `skills/`; required runtime-context snapshot injects the user-role bootstrap at the first request and again after compaction, skipped for child sessions | `references/dsh-tools.md`, appended into the bootstrap | `tests/dsh/` | `dsh plugin --profile <name> add <spec>` or the Plugins page |
 | Gemini CLI | `gemini-extension.json` + `GEMINI.md` | instructions file `@`-includes bootstrap + mapping | `references/gemini-tools.md` | — | `gemini extensions install` |
 | Kimi Code | `.kimi-plugin/plugin.json` | manifest `sessionStart.skill` loads `using-superpowers` | inline `skillInstructions` in manifest | `tests/kimi/` | marketplace or `/plugins install` GitHub URL |
 | OpenCode | `.opencode/plugins/superpowers.js` (root `package.json` `main` for package installs; root `index.js` re-export for the V2 directory form) | in-process: `config` hook registers skills dir; `experimental.chat.messages.transform` (V1) / `session.hook("context")` (V2) injects user message | inline in `superpowers.js` | `tests/opencode/` | `opencode.json` `plugin` (V1) / `plugins` (V2) git URL |

@@ -1,0 +1,11 @@
+# Superpowers for DeepSeek Harness (dsh).
+#
+# This bundle layer inserts the Superpowers host plugin into a dsh profile. The
+# plugin registers the repository's skills/ tree on the skill registry and
+# injects the using-superpowers bootstrap at session start. `name` is a package
+# subpath export of the installed `superpowers` package (see package.json
+# `exports["./dsh"]`); the leading `./` form would also work and would anchor to
+# this directory.
+- insert:
+    - id: superpowers
+      name: "superpowers/dsh"

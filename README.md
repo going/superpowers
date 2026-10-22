@@ -19,6 +19,7 @@ Superpowers is a complete software development methodology for your coding agent
   - [Grok Build CLI](#grok-build-cli)
   - [Kimi Code](#kimi-code)
   - [OpenCode](#opencode)
+  - [DeepSeek Harness](#deepseek-harness)
   - [Pi](#pi)
   - [Qwen Code](#qwen-code)
   - [Hermes Agent](#hermes-agent)
@@ -233,6 +234,28 @@ already use it in another harness.
   ```
 
 - Detailed docs: [docs/README.opencode.md](docs/README.opencode.md)
+
+### DeepSeek Harness
+
+Install Superpowers as a DeepSeek Harness (`dsh`) profile bundle:
+
+- Install into a CLI profile from this repository:
+
+  ```bash
+  dsh plugin --profile web add "superpowers@git+https://github.com/obra/superpowers.git"
+  ```
+
+- In the Web GUI or Desktop app, open **Plugins** → **Add plugin** →
+  **Install a third-party plugin** and enter this repository's address.
+
+- Detailed docs: [docs/README.dsh.md](docs/README.dsh.md)
+
+The bundle registers every Superpowers skill with the harness skill registry and
+injects the `using-superpowers` bootstrap as required session context — once at
+the start of every top-level session, and again after compaction. Task
+subagents skip the bootstrap, so delegated work never restarts design or
+approval cycles its parent already completed. No per-session opt-in and no
+manual profile edits are needed.
 
 ### Pi
 
