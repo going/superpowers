@@ -4,6 +4,21 @@
   "description": "Superpowers skills and runtime bootstrap for coding agents",
   "type": "module",
   "main": ".opencode/plugins/superpowers.js",
+  "icon": "./.dsh-plugin/icon.svg",
+  "exports": {
+    ".": "./.opencode/plugins/superpowers.js",
+    "./dsh": "./.dsh-plugin/index.js",
+    "./dsh/icon": "./.dsh-plugin/icon.svg",
+    "./dsh/locale/*.json": "./.dsh-plugin/locale/*.json",
+    "./locale/*.json": "./.dsh-plugin/locale/*.json",
+    "./package.json": "./package.json",
+    "./.pi/extensions/superpowers.ts": "./.pi/extensions/superpowers.ts"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./.dsh-plugin/cordis.patch.yml"
+    }
+  },
   "keywords": [
     "pi-package",
     "skills",
