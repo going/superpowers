@@ -237,16 +237,26 @@ already use it in another harness.
 
 ### DeepSeek Harness
 
-Install Superpowers as a DeepSeek Harness (`dsh`) profile bundle:
-
-- Install into a CLI profile from this repository:
-
-  ```bash
-  dsh plugin --profile web add "superpowers@git+https://github.com/obra/superpowers.git"
-  ```
+Install Superpowers as a DeepSeek Harness (`dsh`) profile bundle. Install from a
+checkout that contains `.dsh-plugin/` — for this repository that is
+`https://github.com/going/superpowers`, or the absolute path to your local
+checkout.
 
 - In the Web GUI or Desktop app, open **Plugins** → **Add plugin** →
-  **Install a third-party plugin** and enter this repository's address.
+  **Install a third-party plugin** and enter that repository address or the
+  absolute path to your checkout.
+
+- From a CLI profile, install the same spec:
+
+  ```bash
+  dsh plugin --profile web add /path/to/superpowers
+  dsh plugin --profile web add "superpowers@git+https://github.com/going/superpowers.git"
+  ```
+
+> Do not install the bare npm package name `superpowers` or an older upstream
+> checkout: those releases predate the DeepSeek Harness bundle and are rejected
+> with **"This package declares no bundle"**. Install only from a tree that
+> contains `.dsh-plugin/`.
 
 - Detailed docs: [docs/README.dsh.md](docs/README.dsh.md)
 
