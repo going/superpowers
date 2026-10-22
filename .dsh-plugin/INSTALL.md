@@ -12,22 +12,21 @@ manager — do not copy files into the profile by hand.
 ### Web or Desktop app
 
 Open **Plugins** in the sidebar, choose **Add plugin** → **Install a third-party
-plugin**, and enter `https://github.com/obra/superpowers` (or the absolute path
-to a local checkout). Install enables the bundle by default. A Creator-mode
-agent can also perform the same install with its `plugin_manager` tool and
+plugin**, and enter a checkout that contains `.dsh-plugin/`:
+`https://github.com/going/superpowers`, or the absolute path to your local
+checkout. Install enables the bundle by default. A Creator-mode agent can also
+perform the same install with its `plugin_manager` tool and
 `action: install_bundle`.
+
+Installing the bare npm package name `superpowers` or an older upstream checkout
+fails with **"This package declares no bundle"** — those releases predate this
+integration.
 
 ### CLI profile
 
 ```bash
-dsh plugin --profile web add "superpowers@git+https://github.com/obra/superpowers.git"
-```
-
-Use the profile name you actually boot (`web`, `headless`, a custom profile). To
-install from a local checkout instead:
-
-```bash
 dsh plugin --profile web add /path/to/superpowers
+dsh plugin --profile web add "superpowers@git+https://github.com/going/superpowers.git"
 ```
 
 Start a new session (or restart the app when the profile does not hot-reload

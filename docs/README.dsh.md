@@ -12,22 +12,30 @@ for one profile does not enable it in another.
 ### From the Web or Desktop app
 
 Open **Plugins** in the sidebar, choose **Add plugin** → **Install a third-party
-plugin**, and enter the repository address
-`https://github.com/obra/superpowers` (or the absolute path to a local checkout).
+plugin**, and enter the address of a checkout that contains `.dsh-plugin/`:
+
+- this repository: `https://github.com/going/superpowers`, or
+- the absolute path to your local checkout, e.g. `/path/to/superpowers`.
+
 Install enables the bundle by default. The app's Desktop profile is owned by the
 Desktop shell, so the app's own Plugins page is the supported install path
-there.
+there. A local path also avoids the app's short GitHub connection check when
+your network to GitHub is slow.
 
 To install into a CLI profile, use the launcher's `dsh plugin` command with the
 same profile name you boot:
 
 ```bash
-# Registry-style spec from this repository
-dsh plugin --profile web add "superpowers@git+https://github.com/obra/superpowers.git"
-
-# Local checkout (for development)
+# Local checkout (recommended while developing)
 dsh plugin --profile web add /path/to/superpowers
+
+# Git address containing .dsh-plugin/
+dsh plugin --profile web add "superpowers@git+https://github.com/going/superpowers.git"
 ```
+
+Installing the bare npm package name `superpowers` (or an older upstream
+checkout without `.dsh-plugin/`) fails with **"This package declares no
+bundle"**: those releases predate this integration.
 
 The install adds `superpowers` to the profile's dependencies and appends it to
 `dsh.profile.bundles`; the bundle patch then inserts the `superpowers` Host row.
@@ -106,7 +114,11 @@ Local skills win over packaged Superpowers skills when names collide.
 Reinstall the bundle so the profile picks up the new git revision or checkout:
 
 ```bash
-dsh plugin --profile web add "superpowers@git+https://github.com/obra/superpowers.git"
+# Local checkout
+dsh plugin --profile web add /path/to/superpowers
+
+# Git address
+dsh plugin --profile web add "superpowers@git+https://github.com/going/superpowers.git"
 ```
 
 For a local checkout, editing a skill body takes effect on the next load (each
@@ -121,6 +133,19 @@ app. Pin a tag or commit in the spec when you need a fixed release.
   Superpowers bundle. A failed activation is reported on the row — a missing
   `skills/` tree or tool-mapping file fails loudly by design instead of
   injecting an empty bootstrap. Reinstall the bundle and start a new session.
+- **"This package declares no bundle, so it cannot be managed as a plugin."**
+  The installed package came from a source that predates this integration — the
+  npm `superpowers` package or an older upstream checkout without
+  `.dsh-plugin/`. The failed install restores the profile's dependency list and
+  bundle selection, but it can leave an unused copy under the profile's
+  `node_modules`. Install again from a checkout that contains `.dsh-plugin/`
+  (local path or this repository's Git address); the successful install replaces
+  the stray copy. Restart the app if the Plugins page still shows a stale
+  problem card.
+- **"Cannot access GitHub" or a GitHub connection timeout during install.** The
+  plugin manager performs a short `git ls-remote` check for Git addresses and
+  gives up after a few seconds. Install the absolute path to a local checkout
+  instead, which skips the network check.
 - **A skill is missing from the catalog.** Confirm the bundle is enabled for
   this profile and that the session is not inside a child agent (workers get
   skill access, but their catalog is scoped by the preset they run).
