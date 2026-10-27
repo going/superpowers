@@ -1,6 +1,6 @@
 {
   "name": "superpowers",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "An agentic skills framework & software development methodology that works: planning, TDD, debugging, and collaboration workflows.",
   "author": {
     "name": "Jesse Vincent",
